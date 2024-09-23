@@ -4,6 +4,7 @@ import {
   Image,
   ScrollView,
   Text,
+  useToast,
   VStack,
 } from "@gluestack-ui/themed";
 
@@ -19,6 +20,10 @@ import { AuthNavigatorRoutesProps } from "@routes/auth.routes";
 import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useAuth } from "@hooks/useAuth";
+import { AppError } from "@utils/AppError";
+import { ToastMessage } from "@components/ToatMessage";
+import { useState } from "react";
 
 type SignInPropsForm = {
   email: string;
@@ -37,7 +42,12 @@ const signInSchema = yup.object({
 });
 
 export function SignIn() {
+  const [loading, setLoading] = useState(false);
+
   const navigation = useNavigation<AuthNavigatorRoutesProps>();
+  const { signIn } = useAuth();
+
+  const toast = useToast();
 
   const {
     control,
@@ -47,8 +57,32 @@ export function SignIn() {
     resolver: yupResolver(signInSchema),
   });
 
-  function handleSignIn(data: SignInPropsForm) {
-    console.log(data);
+  async function handleSignIn({ email, password }: SignInPropsForm) {
+    try {
+      setLoading(true);
+      await signIn(email, password);
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+
+      const title = isAppError
+        ? error.message
+        : "Não foi possivel entrar. Tente novamente mais tarde.";
+
+      setLoading(false);
+
+      toast.show({
+        duration: 4000,
+        placement: "top",
+        render: ({ id }) => (
+          <ToastMessage
+            title={title}
+            id={id}
+            action="error"
+            onClose={() => toast.close(id)}
+          />
+        ),
+      });
+    }
   }
 
   function handleNewAccount() {
@@ -108,7 +142,11 @@ export function SignIn() {
               )}
             />
 
-            <Button title="Acessar" onPress={handleSubmit(handleSignIn)} />
+            <Button
+              title="Acessar"
+              onPress={handleSubmit(handleSignIn)}
+              isLoading={loading}
+            />
           </Center>
 
           <Center flex={1} justifyContent="flex-end" mt="$4">
