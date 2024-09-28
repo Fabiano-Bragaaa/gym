@@ -47,8 +47,8 @@ Este é um projeto focado no gerenciamento e acompanhamento de **exercícios di�
 ### 1. Clonar o Repositório e Instalar Dependências
 
 ```bash
-git clone https://github.com/Fabiano-Bragaaa/car-dealership-app
-cd car-dealership-app
+git clone https://github.com/Fabiano-Bragaaa/gym
+cd gym
 npm install
 # ou
 yarn install
